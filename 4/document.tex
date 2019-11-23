@@ -1,0 +1,364 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\setmainfont[Mapping=tex-text]{KaiTi}
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+\linespread{1.1}
+
+
+
+%配置区
+\newcommand{\courseName}{模式识别}
+\newcommand{\homeworkId}{\#4} %作业编号
+\newcommand{\homeworkTitle}{作业\homeworkId}
+\newcommand{\studentId}{201928014629008}%学号
+\newcommand{\studentName}{牛李金梁}%姓名
+
+
+
+\newcommand{\question}[1]{\section*{Question #1}}
+\renewcommand{\part}[1]{\subsection*{(#1)}}
+
+
+
+\pagestyle{fancy}
+\lhead{\studentName}
+\rhead{\courseName\homeworkTitle}
+\cfoot{\thepage}
+
+\title{
+    \vspace{2in}
+    \textmd{\textbf{\courseName}:\homeworkTitle}\\
+    \vspace{0.1in}
+    \large{\studentId}\\
+    \large{\studentName}\\
+    \vspace{3in}
+}
+
+\begin{document}
+
+
+\maketitle
+\date{}
+\pagebreak
+
+\section*{第一部分：计算与证明}
+
+\question{1}
+\part{a}
+记第$k$个样本${\pmb{x}^k} = {\left[ {1,x_1^k,x_2^k, \cdots ,x_d^k} \right]^T}$。
+设隐含层有$n$个神经元，
+输入层到隐含层的连接权重为$\left( {d + 1} \right) \times n$维的矩阵${W^H}$，
+其中某个元素记为${w_{ih}}$；输出层有$c$个神经元，
+隐含层到输出层的连接权重为$\left( n \right) \times c$维的矩阵${W^c}$，
+其中某个元素记${w_{hj}}$。
+
+在前馈过程中，隐含层$h$结点的输出为
+$y_h^k = {f_1}\left( {net_h^k} \right) = f\left( {\sum\limits_i {{w_{ih}}x_i^k} } \right)$
+，$f$为sigmoid函数；输出层$j$结点的输出为
+$z_j^k = {f_2}\left( {net_j^k} \right) = f\left( {\sum\limits_h {{w_{hj}}y_h^k} } \right) = {f_2}\left( {\sum\limits_h {{w_{hj}}{f_1}\left( {\sum\limits_i {{w_{ih}}x_i^k} } \right)} } \right)$
+，$f$为softmax函数。
+
+误差函数为
+\begin{align*}
+	E{\left( w \right)^k} = J{\left( w \right)^k} 
+	&= {1 \over 2}\sum\limits_j {{{\left( {t_j^k - z_j^k} \right)}^2}} \\
+	&= {1 \over 2}\sum\limits_j {{{\left( {t_j^k - f\left( {net_j^k} \right)} \right)}^2}} \\
+	&= {1 \over 2}\sum\limits_j {{{\left( {t_j^k - f\left( {\sum\limits_h {{w_{hj}}f\left( {net_h^k} \right)} } \right)} \right)}^2}} 
+\end{align*}
+
+隐含层到输出层的连接权重调节量：
+\begin{align*}
+	\Delta {w_{hj}} 
+	&=  - \eta {{\partial E} \over {\partial {w_{hj}}}} 
+	= - \eta \sum\limits_k {{{\partial E} \over {\partial net_j^k}}{{\partial net_j^k} \over {\partial {w_{hj}}}}}\\
+	&= \eta \sum\limits_k {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)y_h^k} \\
+	&= \eta \sum\limits_k {\delta _j^ky_h^k} 
+\end{align*}
+
+其中，$\delta _j^k =  - 
+{{\partial E} \over {\partial net_j^k}} = 
+f'\left( {net_j^k} \right)\left( {t_j^k - z_j^k} \right)$，
+$f$为softmax函数。softmax的导数为雅可比矩阵，此处需要的
+是矩阵主对角线上的元素。设softmax主对角线上的第$j$个元素
+是$S_j$，有${{S_j}'} = {S_j}\left( {1 - {S_j}} \right)$。
+
+因此，$\Delta {w_{hj}} =
+\eta \sum\limits_k {\left( {t_j^k - z_j^k} \right)
+{S_j}\left( {1 - {S_j}} \right)y_h^k} $，其中，
+${S_j} = {{\exp \left( {net_j^k} \right)} 
+\over {\sum\limits_i {\exp \left( {net_i^k} \right)} }}$
+
+输入层到隐含层的连接权重调节量：
+\begin{align*}
+	\Delta {w_{ih}} 
+	=  - \eta {{\partial E} \over {\partial {w_{ih}}}} 
+	&=  - \eta \sum\limits_{k,j} {{{\partial E} \over {\partial z_j^k}}{{\partial z_j^k} \over {\partial {w_{ih}}}}} \\
+	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right){{\partial z_j^k} \over {\partial {w_{ih}}}}} \\
+	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right){{\partial z_j^k} \over {\partial net_j^k}}} {{\partial net_j^k} \over {\partial {w_{ih}}}}\\
+	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {{\partial net_j^k} \over {\partial y_h^k}}{{\partial y_h^k} \over {\partial {w_{ih}}}}\\
+	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {w_{hj}}{{\partial y_h^k} \over {\partial {w_{ih}}}}\\
+	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {w_{hj}}{{\partial y_h^k} \over {\partial net_h^k}}{{\partial net_h^k} \over {\partial {w_{ih}}}}\\
+	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {w_{hj}}f'\left( {net_h^k} \right)x_i^k\\
+	&= \eta \sum\limits_k {\delta _h^k} x_i^k
+\end{align*}
+
+其中，$\delta _h^k =  - {{\partial E} \over {\partial net_h^k}} = f'\left( {net_h^k} \right)\sum\limits_j {{w_{hj}}\delta _h^k} $，$\delta _j^k = f'\left( {net_j^k} \right)\left( {t_j^k - z_j^k} \right)$。
+
+sigmoid函数的导数${{S_h}'} = {{S_h}\left( {1 - {S_h}} \right)}$，于是，$\Delta {w_{ih}} 
+= \sum\limits_j {{w_{hj}}\delta _j^k} {S_h}\left( {1 - {S_h}} \right)x_i^k$，${S_h} = {1 \over {1 + \exp \left( { - net_h^k} \right)}}$
+
+\part{b}
+通过(a)中的推导可以看出，反向传播算法将各层间的连接权重分隔开，
+使之相互独立，传播时输出层的误差沿着前馈网络的反方向
+逐层更新层间的连接权重，从而避免了深层网络中复合函数链式求导中过长的链。
+这一算法对简化神经网络优化过程有着重要的意义。
+
+\question{2}
+计算步骤：
+\begin{itemize}
+	\item[•] 初始化网络。通常使用随机初始化的方法。
+	\item[•] 输入训练样本，每个样本为一个$d$维向量。
+	\item[•] 计算映射层的权重向量和输入向量的距离。
+		${d_j} = \sqrt {\sum\limits_{i = 1}^d {{{\left( {{x_i} - {w_{ij}}} \right)}^2}} } $。
+	\item[•] 选择与权重向量距离最小的神经元作为胜出神经元${j^*}$，并给出其邻接
+		神经元集合$h\left( {.,{j^*}} \right)$
+	\item[•] 调整胜出神经元和其邻接神经元的权重，按下式更新：
+	$$\Delta {w_{ij}} = \eta h\left( {j,{j^*}} \right)\left( {{x_i} - {w_{ij}}} \right)$$
+	$${w_{ij}}\left( {t + 1} \right) = {w_{ij}}\left( t \right) + \Delta {w_{ij}}$$
+	\item[•] 检查是否达到预设要求，是则结束算法，否则进行迭代。
+\end{itemize}
+
+算法流程图：
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1\textwidth]{Figure_2.png}
+	\caption{自组织算法流程图}
+	\label{figl}
+\end{figure}
+
+\question{3}
+\part{1}
+
+\begin{description}
+	\item [\pmb{输入}] 图像大小：${\rm{400}} \times {\rm{400}}$
+	\item [\pmb{第一卷积层}] 
+	
+	滤波器大小：${\rm{5}} \times {\rm{5}}$
+
+	结点图像个数：$20$
+
+	图像大小：${\rm{396}} \times {\rm{396}}$
+	
+	pooling后图像大小：${\rm{198}} \times {\rm{198}}$
+	
+	包含偏置的训练权重个数：${\rm{5}} \times {\rm{5}} \times {\rm{20 + 20 = 520}}$
+
+	\item [\pmb{第二卷积层}] 
+	滤波器大小：${\rm{3}} \times {\rm{3}} \times {\rm{20}}$
+
+	结点图像个数：$30$
+
+	滤波器总数：$30$
+
+	图像大小：${\rm{196}} \times {\rm{196}}$
+	
+	pooling后图像大小：${\rm{98}} \times {\rm{98}}$
+	
+	包含偏置的训练权重个数：${\rm{20}} \times {\rm{3}} \times {\rm{3}} \times {\rm{30 + 30 = 5430}}$
+	
+	\item[\pmb{第三卷积层}]	
+	滤波器大小：${\rm{3}} \times {\rm{3}} \times {\rm{30}}$
+
+	结点图像个数：$20$
+
+	滤波器总数：$20$
+	
+	图像大小：${\rm{96}} \times {\rm{96}}$
+	
+	pooling后图像大小：${\rm{48}} \times {\rm{48}}$
+	
+	包含偏置的训练权重个数：${\rm{30}} \times {\rm{3}} \times {\rm{3}} \times {\rm{20 + 20 = 5420}}$
+	
+	\item[\pmb{第四卷积层}]
+	滤波器大小：${\rm{3}} \times {\rm{3}} \times {\rm{10}}$
+
+	结点图像个数：$10$
+
+	滤波器总数：$10$
+
+	特征图尺度：${\rm{46}} \times {\rm{46}}$
+	
+	pooling后图像大小：${\rm{23}} \times {\rm{23}}$
+	
+	包含偏置的训练权重个数：${\rm{20}} \times {\rm{3}} \times {\rm{3}} \times {\rm{10 + 10 = 1810}}$
+
+	\item[\pmb{全连接层}]
+	输入图像大小： ${\rm{23}} \times {\rm{23}}$
+
+	输入图像个数：$10$
+
+	输出结点个数：$10$
+	
+	包含偏置的训练权重个数：${\rm{10}} \times {\rm{23}} \times {\rm{23}} \times {\rm{10 + 10 = 52910}}$
+\end{description}
+采用权值共享和局部连接的总权重个数为65290。
+\\\\
+\pmb{采用全连接网络}：
+
+输入层到第一隐层：${\rm{400}} \times {\rm{400}} \times {\rm{396}} \times {\rm{396}} \times {\rm{20 + 396}} \times {\rm{396}} \times {\rm{20 = 501814336320}}$
+
+第一隐层到第二隐层：${\rm{198}} \times {\rm{198}} \times {\rm{20}} \times {\rm{196}} \times {\rm{196}} \times {\rm{30 + 196}} \times {\rm{196}} \times {\rm{30 = 903637670880}}$
+
+第二隐层到第三隐层：${\rm{98}} \times {\rm{98}} \times {\rm{30}} \times {\rm{96}} \times {\rm{96}} \times {\rm{20 + 96}} \times {\rm{96}} \times {\rm{20 = 53106462720}}$
+
+第三隐层到第四隐层：${\rm{48}} \times {\rm{48}} \times {\rm{20}} \times {\rm{46}} \times {\rm{46}} \times {\rm{10 + 46}} \times {\rm{46}} \times {\rm{10 = 975073960}}$
+
+第四隐层到输出层：${\rm{23}} \times {\rm{23}} \times {\rm{10}} \times {\rm{10 + 10}} \times {\rm{10 = 53000}}$
+
+总权重个数约为${\rm{1}}{\rm{.459}} \times {\rm{1}}{{\rm{0}}^{{\rm{12}}}}$。
+\\\\
+\pmb{不采用权值共享}：
+
+输入层到第一隐层：${\rm{5}} \times {\rm{5}} \times {\rm{396}} \times {\rm{396}} \times {\rm{20 + 396}} \times {\rm{396}} \times {\rm{20 = 105304320}}$
+
+第一隐层到第二隐层：${\rm{3}} \times {\rm{3}} \times {\rm{20}} \times {\rm{196}} \times {\rm{196}} \times {\rm{30 + 196}} \times {\rm{196}} \times {\rm{30 = 208598880}}$
+
+第二隐层到第三隐层：${\rm{3}} \times {\rm{3}} \times {\rm{30}} \times {\rm{96}} \times {\rm{96}} \times {\rm{20 + 96}} \times {\rm{96}} \times {\rm{20 = 49950720}}$
+
+第三隐层到第四隐层：${\rm{3}} \times {\rm{3}} \times {\rm{20}} \times {\rm{46}} \times {\rm{46}} \times {\rm{10 + 46}} \times {\rm{46}} \times {\rm{10 = 3829960}}$
+
+第四隐层到输出层：${\rm{23}} \times {\rm{23}} \times {\rm{10}} \times {\rm{10 + 10}} \times {\rm{10 = 53000}}$
+
+总权重个数约为${\rm{3}}{\rm{.67}} \times {\rm{1}}{{\rm{0}}^{\rm{8}}}$。
+\\\\
+与二者相比，采用权值共享和局部连接的总权重个数基本可以忽略。
+
+\part{2}
+max pooling的前向传播是舍去其他元素，把区域内最大的值传给后一层。
+反向传播则把梯度直接传给前一层该区域的某一个像素，
+而其他像素为0。
+确定这个像素需要记录下pooling时取的是哪个像素，
+即最大值所在位置。
+
+\part{3}
+能改变网络结构的因素：
+\begin{itemize}
+	\item 改变网络层数
+	\item 采用不同大小的滤波器
+	\item 激励函数的选择
+	\item 池化操作的选择
+	\item 能量函数的选择
+\end{itemize}
+
+\section*{第二部分：计算机编程}
+环境为python3.7
+
+依赖库：numpy、matplotlib
+
+运行方式：直接在cmd中执行相应py文件
+
+\question{1}
+使用Batch perception算法训练判别函数，首先要对样本进行规范化增广，
+然后利用这些样本训练线性判别函数。
+
+具体的训练过程需要将每一步错分的点相加并乘以步长来修正权向量$\pmb{a}$，
+如此迭代直至完全分开或修正值很小（以应对线性不可分的情况）。
+
+实验中，取初始权向量$\pmb{a} = \pmb{0}$，$\eta = 1$，$\theta = 0.01$，
+结果如下图：
+\begin{figure}[ht]
+	\centering
+	\subfigure{
+		\begin{minipage}[t]{0.45\linewidth}
+			\centering
+			\includegraphics[width=3in]{Figure_2.png}
+		\end{minipage}
+	}
+	\subfigure{
+		\begin{minipage}[t]{0.45\linewidth}
+			\centering
+			\includegraphics[width=3in]{Figure_2.png}
+		\end{minipage}
+	}
+	\centering
+	\caption{Batch perception算法结果}
+	\label{figl}
+\end{figure}
+
+问题(a)中分类$\omega_1$和$\omega_2$的结果如左图所示，判别函数左上
+判别为$\omega_1$，右下判别为$\omega_2$，收敛步数为23。
+
+问题(b)中分类$\omega_3$和$\omega_2$的结果如右图所示，判别函数左上
+判别为$\omega_3$，右下判别为$\omega_2$，收敛步数为16。
+
+\question{2}
+Ho-Kashyap算法通过最小化误差来优化$b$，并通过$a = Y^+ b$
+计算对应的$a$，进而得到一组$a, b$使$Ya = b > 0$。 
+
+搜索到最优解是比较困难的，需要设定最大迭代次数和收敛误差。
+本程序设定步长为0.8，最大迭代次数为$2000$，收敛误差为$0.01$，
+若所有样本的误差小于$b_{min}$（设定为0.001）或迭代$2000$次，则停止迭代。
+
+
+$\omega_1$和$\omega_3$的分类结果如下图中左图所示，
+决策面左上方为$\omega_3$，右下方为$\omega_1$。
+可以看到有2个分类错误点，并且输出了No solution found，
+说明该问题是线性不可分的。
+
+$\omega_2$和$\omega_4$的分类结果如下图中右图所示，
+决策面左下方为$\omega_4$，右上方为$\omega_2$。
+可以看出该问题是线性可分的，迭代次数为899。
+\begin{figure}[ht]
+	\centering
+	\subfigure{
+		\begin{minipage}[t]{0.45\linewidth}
+			\centering
+			\includegraphics[width=3in]{Figure_2.png}
+		\end{minipage}
+	}
+	\subfigure{
+		\begin{minipage}[t]{0.45\linewidth}
+			\centering
+			\includegraphics[width=3in]{Figure_2.png}
+		\end{minipage}
+	}
+	\centering
+	\caption{Ho-Kashyap算法结果}
+	\label{figl}
+\end{figure}
+
+\question{3}
+使用MSE多类扩展方法对4个类别进行分类。
+
+具体的算法实现中，主要是要构造$\pmb{Y}$，并利用
+${\hat W = {(\hat X{\hat X^T} + \lambda I)^{ - 1}}\hat X{Y^T}}$
+来计算$\hat W$确定分类区域，程序中设定$\lambda = 0.01$。
+
+根据决策规则$x \in \omega_i, g_i(x) = \max  g_j(x), j = 1, \dots, 4$
+可以绘制出决策区域（本程序直接利用点采样确定了决策区域，而非计算线性判别函数），
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Figure_2.png}
+	\caption{决策区域示意图}
+	\label{figl}
+\end{figure}
+
+图中红色为$\omega_1$决策区域，
+黄色为$\omega_2$决策区域，绿色为$\omega_3$决策区域，
+蓝色为$\omega_4$决策区域。
+并以实心圆标记训练样本，x标记测试样本，
+通过统计可以得到测试样本的分类正确率为100\%。
+\end{document}
