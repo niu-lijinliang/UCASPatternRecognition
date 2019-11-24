@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as pyplot
+import matplotlib.pyplot as plt
 
 omega1 = np.array([[1.58, 2.32, -5.8], [0.67, 1.58, -4.78], [1.04, 1.01, -3.63],
                    [-1.49, 2.18, -3.39], [-0.41, 1.21, -4.73], [1.39, 3.16, 2.87],
@@ -15,25 +15,25 @@ omega3 = np.array([[-1.54, 1.17, 0.64], [5.41, 3.45, -1.33], [1.55, 0.99, 2.69],
                    [0.66, -0.45, 0.08]])
 CLASS_LABELS = [0, 1, 2]
 CLASS_NUMBER = 3
-hidden_node = 8
-n_class = 3
-eta = 0.1
 max_epoch = 1000
 
 
-def multilayer_perceptron(x, labels, batch_size=1):
+def drawError(errors):
+    plt.title('Error-Iteration')
+    plt.plot([[i] for i in range(len(errors))], errors, ms=1)
+    plt.show()
+
+
+def multilayer_perceptron(x, labels, batch_size=1, hidden_node=8, eta=0.1):
     max_iteration = int(x.shape[0] // batch_size)
 
-    # 初始化权重
+    # 随机初始化权重
     w1 = 0.01 * np.random.randn(hidden_node, x.shape[1])
-    w2 = 0.01 * np.random.randn(n_class, hidden_node)
+    w2 = 0.01 * np.random.randn(CLASS_NUMBER, hidden_node)
 
-    sq_error = 0
+    square_error = 0
+    errors = []
     for epoch in range(max_epoch):
-        # % data shuffle
-        # r = randperm(size(x,1));
-        # x = x(r, :);
-        # label = label(r, :);
         for iteration in range(max_iteration):
             net1 = w1.dot(x.T).T
             y = (np.exp(net1) - np.exp(0 - net1)) / \
@@ -42,7 +42,9 @@ def multilayer_perceptron(x, labels, batch_size=1):
             net2 = w2.dot(y.T).T
             z = 1 / (1+np.exp(0-net2))
             error = labels - z
-            sq_error = 0.5 * np.sum(np.power(error, 2))
+            square_error = 0.5 * np.sum(np.power(error, 2))
+
+            errors.append(square_error)
 
             # BP
             df2 = z * (1-z)
@@ -53,24 +55,31 @@ def multilayer_perceptron(x, labels, batch_size=1):
             delta1 = (delta2.dot(w2)) * df1
             dw1 = (x.T .dot(delta1)).T
 
-            w2 += eta*dw2
-            w1 += eta*dw1
+            w2 += eta * dw2
+            w1 += eta * dw1
 
     pred = np.argmax(z, axis=1)
     label = np.argmax(labels, axis=1)
     acc = np.sum(pred == label) / x.shape[0]
-    return sq_error, acc
+
+    drawError(errors)
+
+    return square_error, acc
 
 
 if __name__ == "__main__":
+    # 增广样本
     x = np.vstack((omega1, omega2, omega3))
     x = np.column_stack((x, [1] * 30))
+
+    # 建立标签
     labels_train = np.repeat(CLASS_LABELS, 10)
     labels = np.eye(3)[labels_train]
 
+    # 批量训练
     batch_size = x.shape[0] / CLASS_NUMBER
-    b_error, b_res = multilayer_perceptron(x, labels, batch_size)
-    print(b_error, b_res)
+    b_error, b_res = multilayer_perceptron(
+        x, labels, batch_size)
 
+    # 单样本训练
     s_error, s_res = multilayer_perceptron(x, labels, 1)
-    print(s_error, s_res)
