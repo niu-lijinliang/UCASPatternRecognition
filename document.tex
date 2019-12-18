@@ -20,7 +20,7 @@
 
 %配置区
 \newcommand{\courseName}{模式识别}
-\newcommand{\homeworkId}{\#4} %作业编号
+\newcommand{\homeworkId}{\#6} %作业编号
 \newcommand{\homeworkTitle}{作业\homeworkId}
 \newcommand{\studentId}{201928014629008}%学号
 \newcommand{\studentName}{牛李金梁}%姓名
@@ -50,78 +50,7 @@
 \pagebreak
 
 \section*{第一部分：计算与证明}
-
-\question{1}
-\part{a}
-记第$k$个样本${\pmb{x}^k} = {\left[ {1,x_1^k,x_2^k, \cdots ,x_d^k} \right]^T}$。
-设隐含层有$n$个神经元，
-输入层到隐含层的连接权重为$\left( {d + 1} \right) \times n$维的矩阵${W^H}$，
-其中某个元素记为${w_{ih}}$；输出层有$c$个神经元，
-隐含层到输出层的连接权重为$\left( n \right) \times c$维的矩阵${W^c}$，
-其中某个元素记${w_{hj}}$。
-
-在前馈过程中，隐含层$h$结点的输出为
-$y_h^k = {f_1}\left( {net_h^k} \right) = f\left( {\sum\limits_i {{w_{ih}}x_i^k} } \right)$
-，$f$为sigmoid函数；输出层$j$结点的输出为
-$z_j^k = {f_2}\left( {net_j^k} \right) = f\left( {\sum\limits_h {{w_{hj}}y_h^k} } \right) = {f_2}\left( {\sum\limits_h {{w_{hj}}{f_1}\left( {\sum\limits_i {{w_{ih}}x_i^k} } \right)} } \right)$
-，$f$为softmax函数。
-
-误差函数为
-\begin{align*}
-	E{\left( w \right)^k} = J{\left( w \right)^k} 
-	&= {1 \over 2}\sum\limits_j {{{\left( {t_j^k - z_j^k} \right)}^2}} \\
-	&= {1 \over 2}\sum\limits_j {{{\left( {t_j^k - f\left( {net_j^k} \right)} \right)}^2}} \\
-	&= {1 \over 2}\sum\limits_j {{{\left( {t_j^k - f\left( {\sum\limits_h {{w_{hj}}f\left( {net_h^k} \right)} } \right)} \right)}^2}} 
-\end{align*}
-
-隐含层到输出层的连接权重调节量：
-\begin{align*}
-	\Delta {w_{hj}} 
-	&=  - \eta {{\partial E} \over {\partial {w_{hj}}}} 
-	= - \eta \sum\limits_k {{{\partial E} \over {\partial net_j^k}}{{\partial net_j^k} \over {\partial {w_{hj}}}}}\\
-	&= \eta \sum\limits_k {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)y_h^k} \\
-	&= \eta \sum\limits_k {\delta _j^ky_h^k} 
-\end{align*}
-
-其中，$\delta _j^k =  - 
-{{\partial E} \over {\partial net_j^k}} = 
-f'\left( {net_j^k} \right)\left( {t_j^k - z_j^k} \right)$，
-$f$为softmax函数。softmax的导数为雅可比矩阵，此处需要的
-是矩阵主对角线上的元素。设softmax主对角线上的第$j$个元素
-是$S_j$，有${{S_j}'} = {S_j}\left( {1 - {S_j}} \right)$。
-
-因此，$\Delta {w_{hj}} =
-\eta \sum\limits_k {\left( {t_j^k - z_j^k} \right)
-{S_j}\left( {1 - {S_j}} \right)y_h^k} $，其中，
-${S_j} = {{\exp \left( {net_j^k} \right)} 
-\over {\sum\limits_i {\exp \left( {net_i^k} \right)} }}$
-
-输入层到隐含层的连接权重调节量：
-\begin{align*}
-	\Delta {w_{ih}} 
-	=  - \eta {{\partial E} \over {\partial {w_{ih}}}} 
-	&=  - \eta \sum\limits_{k,j} {{{\partial E} \over {\partial z_j^k}}{{\partial z_j^k} \over {\partial {w_{ih}}}}} \\
-	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right){{\partial z_j^k} \over {\partial {w_{ih}}}}} \\
-	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right){{\partial z_j^k} \over {\partial net_j^k}}} {{\partial net_j^k} \over {\partial {w_{ih}}}}\\
-	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {{\partial net_j^k} \over {\partial y_h^k}}{{\partial y_h^k} \over {\partial {w_{ih}}}}\\
-	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {w_{hj}}{{\partial y_h^k} \over {\partial {w_{ih}}}}\\
-	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {w_{hj}}{{\partial y_h^k} \over {\partial net_h^k}}{{\partial net_h^k} \over {\partial {w_{ih}}}}\\
-	&= \eta \sum\limits_{k,j} {\left( {t_j^k - z_j^k} \right)f'\left( {net_j^k} \right)} {w_{hj}}f'\left( {net_h^k} \right)x_i^k\\
-	&= \eta \sum\limits_k {\delta _h^k} x_i^k
-\end{align*}
-
-其中，$\delta _h^k =  - {{\partial E} \over {\partial net_h^k}} = f'\left( {net_h^k} \right)\sum\limits_j {{w_{hj}}\delta _h^k} $，$\delta _j^k = f'\left( {net_j^k} \right)\left( {t_j^k - z_j^k} \right)$。
-
-sigmoid函数的导数${{S_h}'} = {{S_h}\left( {1 - {S_h}} \right)}$，于是，$\Delta {w_{ih}} 
-= \sum\limits_j {{w_{hj}}\delta _j^k} {S_h}\left( {1 - {S_h}} \right)x_i^k$，${S_h} = {1 \over {1 + \exp \left( { - net_h^k} \right)}}$
-
-\part{b}
-通过(a)中的推导可以看出，反向传播算法将各层间的连接权重分隔开，
-使之相互独立，传播时输出层的误差沿着前馈网络的反方向
-逐层更新层间的连接权重，从而避免了深层网络中复合函数链式求导中过长的链。
-这一算法对简化神经网络优化过程有着重要的意义。
-
-\question{2}
+\question{1 Adaboost算法的设计思想}
 计算步骤：
 \begin{itemize}
 	\item[-] 初始化网络。通常使用随机初始化的方法。
@@ -134,6 +63,21 @@ sigmoid函数的导数${{S_h}'} = {{S_h}\left( {1 - {S_h}} \right)}$，于是，
 	$$\Delta {w_{ij}} = \eta h\left( {j,{j^*}} \right)\left( {{x_i} - {w_{ij}}} \right)$$
 	$${w_{ij}}\left( {t + 1} \right) = {w_{ij}}\left( t \right) + \Delta {w_{ij}}$$
 	\item[-] 检查是否达到预设要求，是则结束算法，否则进行迭代。
+\end{itemize}
+\begin{itemize}
+	\item[\pmb{没有免费的午餐定理}] 
+	对寻找代价函数极值的算法，在平均到所有可能的代价函数上时其表现恰好相同。
+	不存在一个与具体应用无关的、普遍适用的最优分类器。
+	算法必须要引入一些与问题领域有关的假设。
+	要想在某些指标上得到性能的提高，必须在另一些指标上付出相应的代价。
+	\item[丑小鸭定理] 不存在分类的客观标准,一切分类的标准都是主观的。
+	不存在与问题无关的最优的特征/属性集合。
+	不存在与问题无关的模式之间的相似性度量 。
+	\item[Occam 剃刀原理]如无必要，勿增实体。
+	如果对训练数据分类的效果相同，简单的分类器往往优于复杂的分类器。
+	相比复杂的假设，我们更倾向于选择简单的、参数少的假设。
+	\item[最小描述长度原理]我们必须使模型的算法复杂度以及与该模型相适应
+	的训练数据的描述长度之和最小。即，应该选择尽可能简单的分类器或模型。
 \end{itemize}
 
 算法流程图：
